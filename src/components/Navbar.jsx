@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Moon, Sun, Menu, X } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
+import { useActiveSection } from '../hooks/useScrollReveal';
 
 const links = [
   { label: 'About', href: '#about' },
@@ -14,84 +15,91 @@ export default function Navbar() {
   const { dark, toggle } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  useActiveSection();
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', handler);
+    const handler = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handler, { passive: true });
     return () => window.removeEventListener('scroll', handler);
   }, []);
 
-  return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-[#0A0A0F]/90 backdrop-blur-md border-b border-[#1E1E2E]' : 'bg-transparent'
-      }`}
-      style={!dark && scrolled ? { background: 'rgba(245,243,238,0.9)' } : {}}
-    >
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <a href="#" className="font-display font-bold text-lg tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>
-          <span className="text-[#E8FF47]">M</span>
-          <span className={dark ? 'text-white' : 'text-[#0A0A0F]'}>E</span>
-          <span className={`font-mono text-xs ml-1 ${dark ? 'text-[#6B6B7B]' : 'text-[#6B6B7B]'}`}>.dev</span>
-        </a>
+  // Lock body scroll when mobile menu open
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
 
-        {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-8">
-          {links.map(l => (
-            <a
-              key={l.href}
-              href={l.href}
-              className={`font-mono text-xs tracking-widest uppercase transition-colors hover:text-[#E8FF47] ${
-                dark ? 'text-[#6B6B7B]' : 'text-[#6B6B7B]'
-              }`}
-            >
-              {l.label}
+  const base = 'fixed top-0 left-0 right-0 z-50 transition-all duration-500';
+  const bg = scrolled
+    ? dark
+      ? `${base} bg-[#0A0A0F]/95 backdrop-blur-xl border-b border-[#1E1E2E] shadow-[0_1px_0_rgba(232,255,71,0.04)]`
+      : `${base} bg-[#F5F3EE]/95 backdrop-blur-xl border-b border-gray-200`
+    : `${base} bg-transparent`;
+
+  return (
+    <>
+      <nav className={bg} role="navigation" aria-label="Main navigation">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          {/* Logo */}
+          <a href="#" className="group flex items-baseline gap-0.5 outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            aria-label="Mohamed Elafandy — home">
+            <span className="font-display font-extrabold text-xl text-[#E8FF47] transition-transform group-hover:scale-105"
+              style={{ fontFamily: 'Syne, sans-serif' }}>M</span>
+            <span className={`font-display font-extrabold text-xl transition-colors ${dark ? 'text-white' : 'text-[#0A0A0F]'}`}
+              style={{ fontFamily: 'Syne, sans-serif' }}>E</span>
+            <span className="font-mono text-[10px] ml-0.5 text-[#6B6B7B] leading-none self-center">.dev</span>
+          </a>
+
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center gap-6 lg:gap-8">
+            {links.map(l => (
+              <a key={l.href} href={l.href}
+                className="nav-link relative font-mono text-[10px] tracking-[0.2em] uppercase text-[#6B6B7B] hover:text-[#E8FF47] transition-colors duration-200 outline-none focus-visible:text-[#E8FF47]">
+                {l.label}
+              </a>
+            ))}
+          </div>
+
+          {/* Right actions */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggle}
+              aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="p-2 border border-[#1E1E2E] text-[#6B6B7B] hover:border-[#E8FF47] hover:text-[#E8FF47] transition-all duration-200 hover:bg-[#E8FF47]/5 focus-visible:outline-accent">
+              {dark ? <Sun size={13} strokeWidth={1.5} /> : <Moon size={13} strokeWidth={1.5} />}
+            </button>
+
+            <button
+              onClick={() => setOpen(o => !o)}
+              aria-label={open ? 'Close menu' : 'Open menu'}
+              aria-expanded={open}
+              className={`md:hidden p-2 border border-[#1E1E2E] transition-colors hover:border-[#E8FF47] ${dark ? 'text-white' : 'text-[#0A0A0F]'}`}>
+              {open ? <X size={15} strokeWidth={1.5} /> : <Menu size={15} strokeWidth={1.5} />}
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile drawer */}
+      <div
+        className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ${open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setOpen(false)}>
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      </div>
+      <div
+        className={`fixed top-16 left-0 right-0 z-40 md:hidden transition-all duration-300 ease-out ${open ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0 pointer-events-none'}`}>
+        <div className={`border-b px-6 py-8 flex flex-col gap-6 ${dark ? 'bg-[#0A0A0F] border-[#1E1E2E]' : 'bg-[#F5F3EE] border-gray-200'}`}>
+          {links.map((l, i) => (
+            <a key={l.href} href={l.href}
+              onClick={() => setOpen(false)}
+              className={`flex items-center justify-between font-mono text-xs tracking-[0.2em] uppercase text-[#6B6B7B] hover:text-[#E8FF47] transition-colors`}
+              style={{ transitionDelay: `${i * 40}ms` }}>
+              <span>{l.label}</span>
+              <span className="text-[#E8FF47]/40 text-sm">→</span>
             </a>
           ))}
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={toggle}
-            className={`p-2 rounded border transition-colors ${
-              dark
-                ? 'border-[#1E1E2E] text-[#6B6B7B] hover:border-[#E8FF47] hover:text-[#E8FF47]'
-                : 'border-gray-300 text-gray-500 hover:border-[#E8FF47] hover:text-[#0A0A0F]'
-            }`}
-          >
-            {dark ? <Sun size={14} /> : <Moon size={14} />}
-          </button>
-
-          <button
-            onClick={() => setOpen(o => !o)}
-            className={`md:hidden p-2 ${dark ? 'text-white' : 'text-[#0A0A0F]'}`}
-          >
-            {open ? <X size={18} /> : <Menu size={18} />}
-          </button>
         </div>
       </div>
-
-      {/* Mobile menu */}
-      {open && (
-        <div
-          className={`md:hidden border-t px-6 py-6 flex flex-col gap-4 ${
-            dark ? 'bg-[#0A0A0F] border-[#1E1E2E]' : 'bg-[#F5F3EE] border-gray-200'
-          }`}
-        >
-          {links.map(l => (
-            <a
-              key={l.href}
-              href={l.href}
-              onClick={() => setOpen(false)}
-              className="font-mono text-xs tracking-widest uppercase text-[#6B6B7B] hover:text-[#E8FF47]"
-            >
-              {l.label}
-            </a>
-          ))}
-        </div>
-      )}
-    </nav>
+    </>
   );
 }
