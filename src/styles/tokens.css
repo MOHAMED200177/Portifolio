@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* palette: single source of truth. No blue/cyan/teal/indigo/violet. */
+  --terminal-bg: #0A0A0A;  --terminal-green: #39FF7A;
+  --bg: #141414; --surface: #1C1C1C; --panel: #242424; --border: #2B2B2B;
+  --gray: #8C8A84; --text: #E8E4DA;
+  --orange: #FF7A45; --mint: #7EE787; --acid-yellow: #FFE14A; --hot-pink: #FF3D8B;
+  --toxic-lime: #B6FF3B; --rose: #FF9EB5; --peach: #FFB08A; --crimson: #E5484D;
+
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-serif: "Newsreader Variable", "Newsreader", Georgia, "Times New Roman", serif;
+
+  /* motion: one easing family for the whole site */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-key: cubic-bezier(0.3, 0, 0.2, 1);
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: var(--font-serif); font-size: 1.0625rem; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; }
+/* emphasis = marker highlight, never bold */
+mark.hl { background: linear-gradient(transparent 58%, color-mix(in srgb, var(--acid-yellow) 55%, transparent) 58%); color: inherit; }
+
+/* scroll gate: applied while the intro is running */
+html[data-phase]:not([data-phase="live"]) { overflow: hidden; overscroll-behavior: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+@keyframes blink { 50% { opacity: 0; } }
+@keyframes pulse-key { 0%,100% { box-shadow: 0 0 0 0 rgba(57,255,122,.0); } 50% { box-shadow: 0 0 14px 3px rgba(57,255,122,.6); } }
+@keyframes pulse-key-hot { 0%,100% { box-shadow: 0 0 6px 1px rgba(57,255,122,.5); } 50% { box-shadow: 0 0 26px 8px rgba(57,255,122,.9); } }
+@keyframes site-in { from { opacity: 0; } to { opacity: 1; } }
+.cursor { animation: blink 1s steps(1) infinite; }
+.site-in { animation: site-in .7s var(--ease-out); }
+.key-pulse { animation: pulse-key 1.4s ease-in-out infinite; }
+.key-pulse-hot { animation: pulse-key-hot .8s ease-in-out infinite; }
+
+:root { --crimson-ink: #F07378; } /* crimson tint for small text: AA on bg */
+
+/* Lenis */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+
+/* stage entry: top rule draws in the stage color */
+section[data-stage]::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 1px; background: var(--border); }
+section[data-stage]::after { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: var(--c); transform: scaleX(0); transform-origin: left; transition: transform 1s var(--ease-out); }
+section.sec-in::after { transform: scaleX(1); }
+
+/* output "prints" top to bottom */
+@keyframes wipe { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(-12px); } }
+.rv { clip-path: inset(0 0 100% 0); }
+.rv-in { animation: wipe .85s var(--ease-out) both; }
+
+/* pointer spotlight on code blocks, in the stage color */
+.code { background-image: radial-gradient(280px circle at var(--mx, -999px) var(--my, 0px), color-mix(in srgb, var(--c, var(--orange)) 16%, transparent), transparent); }
+.row { transition: background-color .25s var(--ease-out); }
+.row:hover { background-color: color-mix(in srgb, var(--c) 9%, transparent); }
+mark.hl { background-size: 0% 100%; background-repeat: no-repeat; }
+@keyframes party { 0% { color: var(--hot-pink); } 25% { color: var(--acid-yellow); } 50% { color: var(--toxic-lime); } 75% { color: var(--peach); } 100% { color: var(--hot-pink); } }
+.party h2, .party code { animation: party 2.4s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rv { clip-path: none; } .rv-in { animation: none; }
+  section[data-stage]::after { transform: scaleX(1); transition: none; }
+}
+
+/* contact icons: site colors only; fill + lift on hover/focus */
+.ci { color: var(--k); border: 1px solid var(--border); transition: background-color .25s var(--ease-out), color .25s var(--ease-out), border-color .25s, transform .3s var(--ease-out); }
+.ci .ci-sub { color: var(--gray); transition: color .25s; }
+.ci svg { transition: transform .4s var(--ease-out); }
+.ci:hover, .ci:focus-visible { background: var(--k); color: var(--bg); border-color: var(--k); transform: translateY(-3px); }
+.ci:hover .ci-sub, .ci:focus-visible .ci-sub { color: var(--bg); }
+.ci:hover svg { transform: rotate(-8deg) scale(1.12); }
+@media (prefers-reduced-motion: reduce) { .ci:hover { transform: none; } }
+body { overflow-x: clip; }
+
+/* debug mode */
+html.debug section[data-stage] { outline: 1px dashed var(--c); outline-offset: -2px; }
+html.debug section[data-stage] header::before { content: "<" attr(data-comp) " />"; display: block; margin-bottom: .5rem; font: 12px var(--font-mono); color: var(--c); }
+
+/* pipes: dashes flow along the pipe (transform only) */
+.pipe { position: relative; overflow: hidden; border-radius: 3px; background: color-mix(in srgb, var(--hot-pink) 14%, transparent); }
+.pipe::before { content: ""; position: absolute; inset: 0 0 0 -16px; background: repeating-linear-gradient(90deg, var(--hot-pink) 0 10px, transparent 10px 16px); opacity: .65; animation: pipeflow 1s linear infinite; }
+@keyframes pipeflow { to { transform: translateX(16px); } }
+@media (prefers-reduced-motion: reduce) { .pipe::before, .cursor { animation: none !important; } }
+
+/* skill chips: small rounded boxes */
+.chip { display: inline-block; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); padding: 5px 11px; font: 13px/1.25 var(--font-mono); color: var(--text); transition: background-color .2s var(--ease-out), color .2s, border-color .2s, transform .25s var(--ease-out); }
+.chip-proof { border-color: color-mix(in srgb, var(--hot-pink) 65%, transparent); }
+.chip-proof:hover, .chip-proof:focus-visible { background: var(--hot-pink); color: var(--bg); border-color: var(--hot-pink); transform: translateY(-2px); }
+
+/* ---------- cards (Education, Credentials): soft-cornered, gradient hairline, spotlight on hover ---------- */
+.card { position: relative; isolation: isolate; display: flex; flex-direction: column; padding: 1.75rem; border-radius: 22px; overflow: hidden;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--c) 7%, var(--surface)) 0%, var(--surface) 55%, var(--bg) 100%);
+  transition: transform .4s var(--ease-out), box-shadow .4s var(--ease-out); }
+.card::before { content: ""; position: absolute; inset: 0; z-index: 2; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--c) 75%, transparent), rgba(255,255,255,.07) 38%, rgba(255,255,255,.05) 62%, color-mix(in srgb, var(--c2, var(--c)) 55%, transparent));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.card::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; opacity: 0; transition: opacity .35s var(--ease-out); pointer-events: none;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--c) 18%, transparent), transparent 65%); }
+.card:hover, .card:focus-within { transform: translateY(-4px); box-shadow: 0 8px 22px -12px color-mix(in srgb, var(--c) 60%, transparent); }
+.card:hover::after, .card:focus-within::after { opacity: 1; }
+.mark { display: grid; flex: none; place-items: center; width: 46px; height: 46px; border-radius: 13px; font: 600 13px/1 var(--font-mono); letter-spacing: .02em; color: var(--bg);
+  background: linear-gradient(140deg, var(--c), var(--c2, var(--c))); box-shadow: inset 0 1px 0 rgba(255,255,255,.4); }
+.chipdate { display: inline-block; border: 1px solid color-mix(in srgb, var(--c) 45%, transparent); border-radius: 999px; padding: 2px 10px; font: 12px/1.5 var(--font-mono); color: var(--c); }
+.card-keep { margin: auto -1.75rem -1.75rem; padding: 1.1rem 1.75rem 1.4rem; border-top: 1px solid color-mix(in srgb, var(--c) 28%, transparent); background: color-mix(in srgb, var(--c) 8%, transparent); }
+.tick { flex: none; margin-top: .45em; width: 14px; height: 14px; border-radius: 50%; background: color-mix(in srgb, var(--c) 22%, transparent); position: relative; }
+.tick::after { content: ""; position: absolute; left: 4.5px; top: 2px; width: 3px; height: 6px; border: solid var(--c); border-width: 0 1.6px 1.6px 0; transform: rotate(40deg); }
+@media (prefers-reduced-motion: reduce) { .card:hover { transform: none; } }
+
+/* ---------- experience: an editorial timeline, no boxes ---------- */
+.exp { position: relative; margin-left: 6px; border-left: 1px solid var(--border); }
+.exp-row { position: relative; padding: 2.4rem 0 2.6rem 2rem; transition: opacity .35s var(--ease-out);
+  background-image: radial-gradient(520px circle at var(--mx, -999px) var(--my, 0px), color-mix(in srgb, var(--c) 11%, transparent), transparent 62%); }
+.exp-row + .exp-row { border-top: 1px solid var(--border); }
+.exp-row::before { content: ""; position: absolute; left: -6px; top: 3.15rem; width: 11px; height: 11px; border-radius: 50%; background: var(--bg); border: 2px solid var(--c); transition: transform .3s var(--ease-out), background-color .3s, box-shadow .3s; }
+.exp-row:hover::before { background: var(--c); transform: scale(1.5); box-shadow: 0 0 16px var(--c); }
+@media (hover: hover) { .exp:hover .exp-row:not(:hover) { opacity: .42; } }
+.exp-n { position: absolute; right: 0; top: 1.2rem; font: 500 clamp(64px, 9vw, 120px)/1 var(--font-mono); color: transparent; -webkit-text-stroke: 1px color-mix(in srgb, var(--c) 45%, transparent); pointer-events: none; transition: -webkit-text-stroke-color .3s; }
+.exp-row:hover .exp-n { -webkit-text-stroke-color: var(--c); }
+.exp-title span { background: linear-gradient(var(--c), var(--c)) 0 100% / 0 3px no-repeat; transition: background-size .55s var(--ease-out); padding-bottom: 2px; }
+.exp-row:hover .exp-title span { background-size: 100% 3px; }
+.arrow-link { display: inline-flex; align-items: center; gap: .4rem; border-bottom: 1px solid var(--c); padding-bottom: 1px; transition: gap .25s var(--ease-out), color .2s; }
+.arrow-link:hover, .arrow-link:focus-visible { gap: .8rem; color: var(--c); }

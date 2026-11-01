@@ -1,32 +1,29 @@
 {
-  "name": "portfolio",
+  "name": "elafandy-portfolio",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "framer-motion": "^12.38.0",
-    "lucide-react": "^1.14.0",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "@fontsource-variable/newsreader": "^5.1.0",
+    "@fontsource/ibm-plex-mono": "^5.1.0",
+    "gsap": "^3.12.5",
+    "lenis": "^1.1.9",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
-    "autoprefixer": "^10.5.0",
-    "eslint": "^10.3.0",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-react-refresh": "^0.5.2",
-    "globals": "^17.6.0",
-    "postcss": "^8.5.14",
-    "tailwindcss": "^3.4.19",
-    "vite": "^8.0.12"
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.19",
+    "esbuild": "^0.21.5",
+    "postcss": "^8.4.39",
+    "tailwindcss": "^3.4.6",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.4"
   }
 }
